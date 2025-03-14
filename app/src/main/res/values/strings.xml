@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Smart Attendance System</string>
+    <string name="login_title">Login (Optional)</string>
+    <string name="proceed_button_text">Proceed to Home</string>
+    <string name="welcome_message">Welcome! Scan your fingerprint to mark attendance.</string>
+    <string name="scan_button_text">Scan Fingerprint</string>
+    <string name="attendance_status">Attendance Status</string>
+    <string name="back_button_text">Back to Home</string>
+    <string name="location_permission_denied">Please grant location permission to proceed.</string>
+    <string name="authentication_error">Authentication error: %s</string>
+    <string name="authentication_failed">Authentication failed</string>
+    <string name="within_college_premises">Within college premises. Scan your fingerprint.</string>
+    <string name="outside_college_premises">You are outside college premises!</string>
+    <string name="location_unavailable">Unable to get location</string>
+    <string name="attendance_verified">Attendance Verified\nSMS Sent to Faculty</string>
+    <string name="authentication_failed_faculty">Authentication Failed\nFaculty not registered. Contact admin.</string>
+    <string name="server_error">Server error</string>
+    <string name="network_error">Network Error: %s</string>
+</resources>
