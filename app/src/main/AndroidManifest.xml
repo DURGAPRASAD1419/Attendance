@@ -22,9 +22,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AttendanceApp">
         <activity
-            android:name=".VerifyOtpActivity"
+            android:name=".Fast2SMS"
             android:exported="false" />
-        <!-- <activity -->
+        <activity
+            android:name=".VerifyOtpActivity"
+            android:exported="false" /> <!-- <activity -->
         <!-- android:name=".MyFirebaseMessagingService" -->
         <!-- android:exported="false" /> -->
         <service
