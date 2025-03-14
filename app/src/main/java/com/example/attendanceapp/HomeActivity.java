@@ -17,10 +17,13 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-
+        Button use=findViewById(R.id.fingerprintAuthButton);
         mAuth = FirebaseAuth.getInstance();
 
         Button logoutButton = findViewById(R.id.logoutButton);
+        use.setOnClickListener(v -> {
+            startActivity(new Intent(HomeActivity.this,FingerprintAuthActivity.class));
+        });
         logoutButton.setOnClickListener(v -> {
             mAuth.signOut();
             startActivity(new Intent(HomeActivity.this, LoginActivity.class));

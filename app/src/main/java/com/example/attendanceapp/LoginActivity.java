@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -13,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthOptions;
 import com.google.firebase.auth.PhoneAuthProvider;
@@ -25,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 public class LoginActivity extends AppCompatActivity {
     private EditText phoneEditText;
     private Button sendOtpButton;
+    private ProgressBar progressBar;
     private FirebaseAuth mAuth;
     private String verificationId;
     private DatabaseReference databaseRef;
@@ -34,14 +37,26 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        phoneEditText = findViewById(R.id.phoneEditText);
-        sendOtpButton = findViewById(R.id.sendOtpButton);
         mAuth = FirebaseAuth.getInstance();
         databaseRef = FirebaseDatabase.getInstance().getReference("users");
+
+        phoneEditText = findViewById(R.id.phoneEditText);
+        sendOtpButton = findViewById(R.id.sendOtpButton);
+        progressBar = findViewById(R.id.progressBar);
+
+        // 🔹 Check if user is already logged in
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            // ✅ User is already logged in, redirect to HomeActivity
+            startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+            finish();
+        }
 
         sendOtpButton.setOnClickListener(v -> {
             String phoneNumber = phoneEditText.getText().toString().trim();
             if (!phoneNumber.isEmpty()) {
+                sendOtpButton.setEnabled(false);
+                progressBar.setVisibility(View.VISIBLE);
                 sendVerificationCode(phoneNumber);
             } else {
                 Toast.makeText(LoginActivity.this, "Enter phone number", Toast.LENGTH_SHORT).show();
@@ -55,8 +70,8 @@ public class LoginActivity extends AppCompatActivity {
                 return;
             }
             String token = task.getResult();
-            if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-                saveTokenToDatabase(FirebaseAuth.getInstance().getCurrentUser().getUid(), token);
+            if (mAuth.getCurrentUser() != null) {
+                saveTokenToDatabase(mAuth.getCurrentUser().getUid(), token);
             }
         });
     }
@@ -75,6 +90,8 @@ public class LoginActivity extends AppCompatActivity {
 
                             @Override
                             public void onVerificationFailed(@NonNull FirebaseException e) {
+                                progressBar.setVisibility(View.GONE);
+                                sendOtpButton.setEnabled(true);
                                 Toast.makeText(LoginActivity.this, "Verification failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
                             }
 
@@ -82,6 +99,8 @@ public class LoginActivity extends AppCompatActivity {
                             public void onCodeSent(@NonNull String verificationId,
                                                    @NonNull PhoneAuthProvider.ForceResendingToken token) {
                                 LoginActivity.this.verificationId = verificationId;
+                                progressBar.setVisibility(View.GONE);
+                                sendOtpButton.setEnabled(true);
                                 Intent intent = new Intent(LoginActivity.this, VerifyOtpActivity.class);
                                 intent.putExtra("verificationId", verificationId);
                                 intent.putExtra("phoneNumber", phoneNumber);
@@ -102,6 +121,8 @@ public class LoginActivity extends AppCompatActivity {
                         startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                         finish();
                     } else {
+                        progressBar.setVisibility(View.GONE);
+                        sendOtpButton.setEnabled(true);
                         Toast.makeText(LoginActivity.this, "Authentication Failed", Toast.LENGTH_SHORT).show();
                     }
                 });
