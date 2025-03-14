@@ -2,10 +2,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.attendanceapp">
 
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
+
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
 
     <application
         android:allowBackup="true"
@@ -15,7 +22,21 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AttendanceApp">
         <activity
-            android:name=".FingerPrintAuthActivity"
+            android:name=".VerifyOtpActivity"
+            android:exported="false" />
+        <!-- <activity -->
+        <!-- android:name=".MyFirebaseMessagingService" -->
+        <!-- android:exported="false" /> -->
+        <service
+            android:name=".MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name=".FingerprintAuthActivity"
             android:exported="false" />
         <activity
             android:name=".StatusActivity"

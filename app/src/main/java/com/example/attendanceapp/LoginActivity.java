@@ -2,60 +2,112 @@ package com.example.attendanceapp;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
+import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.PhoneAuthCredential;
+import com.google.firebase.auth.PhoneAuthOptions;
+import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.messaging.FirebaseMessaging;
+
+import java.util.concurrent.TimeUnit;
 
 public class LoginActivity extends AppCompatActivity {
-
-    private EditText emailEditText, passwordEditText;
-    private Button proceedButton;
-    private FirebaseAuth auth;
+    private EditText phoneEditText;
+    private Button sendOtpButton;
+    private FirebaseAuth mAuth;
+    private String verificationId;
+    private DatabaseReference databaseRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        // Initialize Firebase Auth
-        auth = FirebaseAuth.getInstance();
+        phoneEditText = findViewById(R.id.phoneEditText);
+        sendOtpButton = findViewById(R.id.sendOtpButton);
+        mAuth = FirebaseAuth.getInstance();
+        databaseRef = FirebaseDatabase.getInstance().getReference("users");
 
-        // UI Elements
-        emailEditText = findViewById(R.id.usernameEditText);
-        passwordEditText = findViewById(R.id.passwordEditText);
-        proceedButton = findViewById(R.id.proceedButton);
+        sendOtpButton.setOnClickListener(v -> {
+            String phoneNumber = phoneEditText.getText().toString().trim();
+            if (!phoneNumber.isEmpty()) {
+                sendVerificationCode(phoneNumber);
+            } else {
+                Toast.makeText(LoginActivity.this, "Enter phone number", Toast.LENGTH_SHORT).show();
+            }
+        });
 
-        // Login button click event
-        proceedButton.setOnClickListener(v -> loginUser());
+        // Get FCM token and save it
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                Log.w("FCM", "Fetching FCM token failed", task.getException());
+                return;
+            }
+            String token = task.getResult();
+            if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+                saveTokenToDatabase(FirebaseAuth.getInstance().getCurrentUser().getUid(), token);
+            }
+        });
     }
 
-    private void loginUser() {
-        String email = emailEditText.getText().toString().trim();
-        String password = passwordEditText.getText().toString().trim();
+    private void sendVerificationCode(String phoneNumber) {
+        PhoneAuthOptions options =
+                PhoneAuthOptions.newBuilder(mAuth)
+                        .setPhoneNumber(phoneNumber)
+                        .setTimeout(60L, TimeUnit.SECONDS)
+                        .setActivity(this)
+                        .setCallbacks(new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+                            @Override
+                            public void onVerificationCompleted(@NonNull PhoneAuthCredential credential) {
+                                signInWithPhoneAuthCredential(credential);
+                            }
 
-        if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
-            Toast.makeText(LoginActivity.this, "Please enter email and password", Toast.LENGTH_SHORT).show();
-            return;
-        }
+                            @Override
+                            public void onVerificationFailed(@NonNull FirebaseException e) {
+                                Toast.makeText(LoginActivity.this, "Verification failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            }
 
-        auth.signInWithEmailAndPassword(email, password)
+                            @Override
+                            public void onCodeSent(@NonNull String verificationId,
+                                                   @NonNull PhoneAuthProvider.ForceResendingToken token) {
+                                LoginActivity.this.verificationId = verificationId;
+                                Intent intent = new Intent(LoginActivity.this, VerifyOtpActivity.class);
+                                intent.putExtra("verificationId", verificationId);
+                                intent.putExtra("phoneNumber", phoneNumber);
+                                startActivity(intent);
+                            }
+                        })
+                        .build();
+
+        PhoneAuthProvider.verifyPhoneNumber(options);
+    }
+
+    private void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {
+        mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        FirebaseUser user = auth.getCurrentUser();
-                        if (user != null) {
-                            Toast.makeText(LoginActivity.this, "Login successful!", Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
-                            startActivity(intent);
-                            finish(); // Close LoginActivity
-                        }
+                        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                        saveTokenToDatabase(userId, "");
+                        startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                        finish();
                     } else {
-                        Toast.makeText(LoginActivity.this, "Authentication failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LoginActivity.this, "Authentication Failed", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void saveTokenToDatabase(String userId, String token) {
+        databaseRef.child(userId).child("fcmToken").setValue(token);
     }
 }
