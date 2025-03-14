@@ -38,6 +38,6 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         android:padding="12dp"
-        android:backgroundTint="@color/red" />
+        android:backgroundTint="@color/black" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

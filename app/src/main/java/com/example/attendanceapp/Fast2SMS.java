@@ -2,13 +2,16 @@ package com.example.attendanceapp;
 
 import android.os.AsyncTask;
 import android.util.Log;
+
+import androidx.appcompat.app.AppCompatActivity;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 
-public class Fast2SMS {
+public class Fast2SMS extends AppCompatActivity {
     private static final String API_KEY = "DhnUQAgisc7kejplKbq5G6NJZR4H3SdBv190F8CfOuLEYWIMmVXZRDCoUYmz0PNgv1kpSbtjFaWQ2ALc";
 
     public static void sendSMS(String phoneNumber, String message) {
