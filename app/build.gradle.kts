@@ -1,5 +1,6 @@
 plugins {
     id("com.android.application")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -43,5 +44,20 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("com.google.android.material:material:1.9.0")
     implementation("androidx.room:room-runtime:2.5.2")
+    implementation(libs.firebase.auth)
+    implementation(libs.credentials)
+    implementation(libs.credentials.play.services.auth)
+    implementation(libs.googleid)
+    implementation(libs.activity)
     annotationProcessor("androidx.room:room-compiler:2.5.2")
+    implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation ("com.google.firebase:firebase-auth:23.2.0")
+    implementation ("androidx.credentials:credentials:1.5.0-rc01")
+    implementation ("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation ("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+    implementation ("com.google.firebase:firebase-auth")
+    implementation ("com.google.firebase:firebase-database")
+    implementation ("com.google.firebase:firebase-messaging")
+
 }

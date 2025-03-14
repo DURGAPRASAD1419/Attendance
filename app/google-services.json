@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "405496767712",
+    "firebase_url": "https://attendanceapp-ced6f-default-rtdb.firebaseio.com",
+    "project_id": "attendanceapp-ced6f",
+    "storage_bucket": "attendanceapp-ced6f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:405496767712:android:fae1d9976b883ff7f1dc85",
+        "android_client_info": {
+          "package_name": "com.example.attendanceapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrlNQJL3xkuAPoMA9cn8FQ8dHIXNKV67w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
