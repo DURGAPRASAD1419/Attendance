@@ -86,7 +86,7 @@ public class FingerprintAuthActivity extends AppCompatActivity {
             @Override
             public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
                 super.onAuthenticationSucceeded(result);
-                progressBar.setVisibility(ProgressBar.VISIBLE);
+                //progressBar.setVisibility(ProgressBar.VISIBLE);
                 instructionText.setText("Authentication successful!");
 
                 saveAuthStatusToFirebase();
