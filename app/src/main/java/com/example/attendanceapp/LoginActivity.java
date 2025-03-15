@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -31,6 +32,7 @@ public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private String verificationId;
     private DatabaseReference databaseRef;
+    private TextView text;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +53,10 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(new Intent(LoginActivity.this, HomeActivity.class));
             finish();
         }
+        text.setOnClickListener(v ->{
+            startActivity(new Intent(LoginActivity.this,RegisterActivity.class));
+        });
+
 
         sendOtpButton.setOnClickListener(v -> {
             String phoneNumber = phoneEditText.getText().toString().trim();

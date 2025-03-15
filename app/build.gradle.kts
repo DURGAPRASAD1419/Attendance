@@ -58,6 +58,8 @@ dependencies {
 
     // Room Database
     implementation("androidx.room:room-runtime:2.5.2")
+    implementation(libs.activity)
+    androidTestImplementation(libs.junit.junit)
     annotationProcessor("androidx.room:room-compiler:2.5.2")
 
     // Authentication & Identity

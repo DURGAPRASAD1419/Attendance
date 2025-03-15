@@ -1,6 +1,5 @@
 package com.example.attendanceapp;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.animation.Animation;
@@ -24,6 +23,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.concurrent.Executor;
 
@@ -35,7 +35,6 @@ public class FingerprintAuthActivity extends AppCompatActivity {
     private TextView instructionText;
     private ImageView fingerprintAnimation;
 
-    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,7 +42,7 @@ public class FingerprintAuthActivity extends AppCompatActivity {
 
         // Firebase Authentication & Database
         mAuth = FirebaseAuth.getInstance();
-        databaseReference = FirebaseDatabase.getInstance().getReference("users");
+        databaseReference = FirebaseDatabase.getInstance().getReference("Users");
 
         // UI Elements
         fingerprintAnimation = findViewById(R.id.fingerprintAnimation);
@@ -86,9 +85,7 @@ public class FingerprintAuthActivity extends AppCompatActivity {
             @Override
             public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
                 super.onAuthenticationSucceeded(result);
-                //progressBar.setVisibility(ProgressBar.VISIBLE);
                 instructionText.setText("Authentication successful!");
-
                 saveAuthStatusToFirebase();
             }
 
@@ -112,26 +109,36 @@ public class FingerprintAuthActivity extends AppCompatActivity {
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null) {
             String phoneNumber = user.getPhoneNumber();
+            String userId = user.getUid();
             long timestamp = System.currentTimeMillis();
 
-            // ✅ Convert timestamp to readable Date & Time format
             String formattedTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                     .format(new Date(timestamp));
 
-            if (phoneNumber != null) {
-                DatabaseReference userRef = databaseReference.child(phoneNumber);
-                userRef.child("authStatus").setValue("Authenticated");
-                userRef.child("lastAuthenticated").setValue(formattedTime);
+            DatabaseReference userRef = databaseReference.child(userId);
 
-                Log.d("FingerprintAuth", "User authentication saved at: " + formattedTime);
+            // Fetch user name and update Firebase
+            userRef.child("name").get().addOnSuccessListener(dataSnapshot -> {
+                String userName = dataSnapshot.exists() ? dataSnapshot.getValue(String.class) : "Unknown User";
+
+                // Store authentication details in Firebase
+                HashMap<String, Object> updateData = new HashMap<>();
+                updateData.put("phoneNumber", phoneNumber);
+                updateData.put("name", userName);
+                updateData.put("authStatus", "Authenticated");
+                updateData.put("lastAuthenticated", formattedTime);
+
+                userRef.updateChildren(updateData)
+                        .addOnSuccessListener(aVoid -> Log.d("FingerprintAuth", "User authentication saved: " + userName))
+                        .addOnFailureListener(e -> Log.e("FingerprintAuth", "Failed to save authentication status", e));
+
                 sendSuccessSMS(phoneNumber);
-            }
+            }).addOnFailureListener(e -> Log.e("FingerprintAuth", "Failed to fetch user name", e));
         }
     }
 
     private void sendSuccessSMS(String phoneNumber) {
-        // ❌ Fast2SMS is not a built-in Firebase feature.
-        // ✅ Replace this with actual SMS service integration.
+        // 🔹 Implement actual SMS API (Twilio, Nexmo, Firebase Functions, etc.)
         Log.d("FingerprintAuth", "SMS Sent to " + phoneNumber);
     }
 }
