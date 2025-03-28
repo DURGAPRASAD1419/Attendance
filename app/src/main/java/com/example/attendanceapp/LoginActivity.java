@@ -53,9 +53,7 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(new Intent(LoginActivity.this, HomeActivity.class));
             finish();
         }
-        text.setOnClickListener(v ->{
-            startActivity(new Intent(LoginActivity.this,RegisterActivity.class));
-        });
+
 
 
         sendOtpButton.setOnClickListener(v -> {
