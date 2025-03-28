@@ -13,6 +13,8 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
+    <uses-permission android:name="android.permission.READ_SMS"/>
 
     <application
         android:allowBackup="true"
@@ -34,10 +36,10 @@
         </activity>
 
         <!-- Other Activities -->
-        <activity android:name=".Fast2SMS" android:exported="false" />
+<!--        <activity android:name=".Fast2SMS" android:exported="false" />-->
         <activity android:name=".VerifyOtpActivity" android:exported="false" />
         <activity android:name=".FingerprintAuthActivity" android:exported="false" />
-        <activity android:name=".StatusActivity" android:exported="false" />
+
         <activity android:name=".HomeActivity" android:exported="false" />
 <!--        <activity android:name=".LoginActivity" android:exported="false" />-->
 

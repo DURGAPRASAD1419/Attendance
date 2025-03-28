@@ -1,9 +1,7 @@
 package com.example.attendanceapp;
 
-import android.os.AsyncTask;
 import android.util.Log;
-
-import androidx.appcompat.app.AppCompatActivity;
+import android.os.AsyncTask;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -11,7 +9,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 
-public class Fast2SMS extends AppCompatActivity {
+public class Fast2SMS {
+
     private static final String API_KEY = "DhnUQAgisc7kejplKbq5G6NJZR4H3SdBv190F8CfOuLEYWIMmVXZRDCoUYmz0PNgv1kpSbtjFaWQ2ALc";
 
     public static void sendSMS(String phoneNumber, String message) {
@@ -31,16 +30,16 @@ public class Fast2SMS extends AppCompatActivity {
                     int responseCode = conn.getResponseCode();
                     if (responseCode == 200) {
                         BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                        String inputLine;
                         StringBuilder response = new StringBuilder();
+                        String inputLine;
                         while ((inputLine = in.readLine()) != null) {
                             response.append(inputLine);
                         }
                         in.close();
-                        Log.d("Fast2SMS", "SMS Sent: " + response.toString());
+                        Log.d("Fast2SMS", "SMS Sent: " + response);
                         return response.toString();
                     } else {
-                        Log.e("Fast2SMS", "Failed to send SMS: Response Code " + responseCode);
+                        Log.e("Fast2SMS", "Failed to send SMS. Response Code: " + responseCode);
                     }
                 } catch (Exception e) {
                     Log.e("Fast2SMS", "Error sending SMS: " + e.getMessage());

@@ -8,22 +8,25 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class HomeActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
+    private DatabaseReference databaseRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-        Button use=findViewById(R.id.fingerprintAuthButton);
-        mAuth = FirebaseAuth.getInstance();
+        databaseRef = FirebaseDatabase.getInstance().getReference("Users");
 
+        mAuth = FirebaseAuth.getInstance();
+        Button useFingerprint = findViewById(R.id.fingerprintAuthButton);
         Button logoutButton = findViewById(R.id.logoutButton);
-        use.setOnClickListener(v -> {
-            startActivity(new Intent(HomeActivity.this,FingerprintAuthActivity.class));
-        });
+
+        useFingerprint.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, FingerprintAuthActivity.class)));
         logoutButton.setOnClickListener(v -> {
             mAuth.signOut();
             startActivity(new Intent(HomeActivity.this, LoginActivity.class));
@@ -32,7 +35,7 @@ public class HomeActivity extends AppCompatActivity {
 
         checkUserAuthentication();
     }
-
+   // DatabaseReference userRef = databaseRef.child(userId);
     private void checkUserAuthentication() {
         FirebaseUser user = mAuth.getCurrentUser();
         if (user == null) {

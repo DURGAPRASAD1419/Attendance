@@ -69,5 +69,8 @@ dependencies {
 
     // Animated Vector Drawables
     implementation("androidx.vectordrawable:vectordrawable-animated:1.1.0")
-
+    implementation ("com.google.firebase:firebase-auth:23.2.0")
+    implementation ("com.google.firebase:firebase-auth:22.3.1")
+    implementation ("com.google.firebase:firebase-database:20.3.1")
+    implementation ("com.google.android.gms:play-services-auth:20.7.0")
 }
