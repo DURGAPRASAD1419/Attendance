@@ -4,18 +4,17 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.View;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.database.*;
 
 public class UserLoginActivity extends AppCompatActivity {
     private EditText emailEditText, passwordEditText;
     private Button loginButton;
-
     private DatabaseReference databaseReference;
 
     @SuppressLint("MissingInflatedId")
@@ -24,12 +23,11 @@ public class UserLoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_login);
 
-        databaseReference = FirebaseDatabase.getInstance().getReference("Users");
+        databaseReference = FirebaseDatabase.getInstance().getReference("users");
 
         emailEditText = findViewById(R.id.userEmail);
         passwordEditText = findViewById(R.id.userPassword);
         loginButton = findViewById(R.id.btnUserLogin);
-
 
         loginButton.setOnClickListener(v -> loginUser());
     }
@@ -39,42 +37,47 @@ public class UserLoginActivity extends AppCompatActivity {
         String password = passwordEditText.getText().toString().trim();
 
         if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
-            Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please enter both email and password", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+        Log.d("LoginDebug", "Attempting login with email: " + email);
+
+        // Query Firebase for the specific user with the entered email
+        databaseReference.orderByChild("email").equalTo(email).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                boolean userFound = false;
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (!snapshot.exists()) {
+                    Log.d("LoginDebug", "No matching user found for email: " + email);
+                    Toast.makeText(UserLoginActivity.this, "Invalid email or password", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
                 for (DataSnapshot userSnapshot : snapshot.getChildren()) {
-                    String storedEmail = userSnapshot.child("email").getValue(String.class);
                     String storedPassword = userSnapshot.child("password").getValue(String.class);
 
-                    if (storedEmail != null && storedPassword != null &&
-                            storedEmail.equals(email) && storedPassword.equals(password)) {
+                    if (storedPassword != null && storedPassword.equals(password)) {
+                        Log.d("LoginDebug", "Login successful for email: " + email);
 
-                        userFound = true;
+                        // Update login status in Firebase
+                        userSnapshot.getRef().child("isLoggedIn").setValue(true);
+
                         Toast.makeText(UserLoginActivity.this, "Login Successful!", Toast.LENGTH_SHORT).show();
-
-                        // Redirect to next screen
                         startActivity(new Intent(UserLoginActivity.this, FingerprintAuthActivity.class));
                         finish();
                         return;
                     }
                 }
 
-                if (!userFound) {
-                    Toast.makeText(UserLoginActivity.this, "Invalid credentials", Toast.LENGTH_SHORT).show();
-                }
+                Log.d("LoginDebug", "Incorrect password for email: " + email);
+                Toast.makeText(UserLoginActivity.this, "Invalid email or password", Toast.LENGTH_SHORT).show();
             }
 
             @Override
-            public void onCancelled(DatabaseError error) {
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("LoginDebug", "Database Error: " + error.getMessage());
                 Toast.makeText(UserLoginActivity.this, "Database Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
-
 }

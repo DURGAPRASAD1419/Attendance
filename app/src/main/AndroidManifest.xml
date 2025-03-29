@@ -38,6 +38,11 @@
         <activity
             android:name=".AdminLogin"
             android:exported="false" /> <!-- Launcher Activity -->
+
+
+        <activity
+            android:name=".FingerprintAuthActivity"
+            android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -46,10 +51,5 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name=".FingerprintAuthActivity"
-            android:exported="false" />
-
     </application>
 </manifest>

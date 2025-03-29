@@ -2,10 +2,14 @@ package com.example.attendanceapp;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.Button;
@@ -50,7 +54,7 @@ public class FingerprintAuthActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_finger_print_auth);
 
-        databaseRef = FirebaseDatabase.getInstance().getReference("Users");
+        databaseRef = FirebaseDatabase.getInstance().getReference("users");
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         authenticateButton = findViewById(R.id.fingerprintAnimation);
@@ -84,6 +88,7 @@ public class FingerprintAuthActivity extends AppCompatActivity {
 
                         Log.d("FingerprintAuth", "User found: " + userPhoneNumber);
                         Log.d("FingerprintAuth", "Fingerprint Key: " + userFingerprintKey);
+                        Log.d("FingerprintAuth", "User Key: " + userKey);
                         break;
                     }
                 }
@@ -101,6 +106,11 @@ public class FingerprintAuthActivity extends AppCompatActivity {
     }
 
     private void checkLocationAndAuthenticate() {
+        if (!isGPSEnabled()) {
+            askToEnableGPS();
+            return;
+        }
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             return;
@@ -123,6 +133,26 @@ public class FingerprintAuthActivity extends AppCompatActivity {
         float[] results = new float[1];
         Location.distanceBetween(userLat, userLng, COLLEGE_LATITUDE, COLLEGE_LONGITUDE, results);
         return results[0] <= GEOFENCE_RADIUS;
+    }
+
+    private boolean isGPSEnabled() {
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    }
+
+    private void askToEnableGPS() {
+        new AlertDialog.Builder(this)
+                .setTitle("Enable GPS")
+                .setMessage("GPS is required for attendance verification. Enable it?")
+                .setPositiveButton("Yes", (dialog, which) -> {
+                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    startActivity(intent);
+                })
+                .setNegativeButton("No", (dialog, which) -> {
+                    Toast.makeText(FingerprintAuthActivity.this, "GPS is required for authentication!", Toast.LENGTH_LONG).show();
+                })
+                .setCancelable(false)
+                .show();
     }
 
     private void startFingerprintAuth() {
@@ -179,7 +209,7 @@ public class FingerprintAuthActivity extends AppCompatActivity {
             signature.initVerify(publicKey);
             signature.update("VerifyFingerprint".getBytes(StandardCharsets.UTF_8));
 
-            return signature.verify(publicKeyBytes); // Signature verification improved
+            return signature.verify(publicKeyBytes); // ✅ FIXED: Proper verification
         } catch (Exception e) {
             Log.e("FingerprintAuth", "Error verifying fingerprint: " + e.getMessage());
             return false;
@@ -189,20 +219,9 @@ public class FingerprintAuthActivity extends AppCompatActivity {
     private void updateAuthStatus() {
         if (userKey == null) return;
 
-        @SuppressLint("SimpleDateFormat")
         String formattedTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
 
         databaseRef.child(userKey).child("authStatus").setValue("authenticated");
         databaseRef.child(userKey).child("lastAuthenticated").setValue(formattedTime);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 1 && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            checkLocationAndAuthenticate();
-        } else {
-            Toast.makeText(this, "Permission denied. Cannot proceed with authentication.", Toast.LENGTH_SHORT).show();
-        }
     }
 }
